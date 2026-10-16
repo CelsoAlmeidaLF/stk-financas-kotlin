@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun TelaBackup(vm: LancamentosViewModel, fechar: () -> Unit) {
+fun TelaBackup(vm: LancamentosViewModel, acesso: br.com.systekna.financas.aplicacao.AcessoViewModel, fechar: () -> Unit) {
     val c = LocalCores.current
     val ctx = LocalContext.current
     val escopo = rememberCoroutineScope()
@@ -72,11 +72,16 @@ fun TelaBackup(vm: LancamentosViewModel, fechar: () -> Unit) {
             Vidro {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icones.backup, null, tint = c.accent)
+                        Icon(Icones.escudo, null, tint = c.accent)
                         Spacer(Modifier.width(10.dp))
-                        Text("Backup cifrado", style = MaterialTheme.typography.titleMedium, color = c.ink, modifier = Modifier.weight(1f))
+                        Text("Segurança e backup", style = MaterialTheme.typography.titleMedium, color = c.ink, modifier = Modifier.weight(1f))
                         IconButton(onClick = fechar, enabled = !ocupado) { Icon(Icones.fechar, "Fechar", tint = c.soft) }
                     }
+                    SecaoBiometria(acesso)
+                    Spacer(Modifier.height(16.dp))
+                    HorizontalDivider(color = c.line)
+                    Spacer(Modifier.height(16.dp))
+                    Text("Backup cifrado", style = MaterialTheme.typography.titleMedium, color = c.ink)
                     Text("Os dados ficam só neste celular. Exporte um backup de vez em quando e guarde fora dele (Drive, e-mail, computador).",
                         style = MaterialTheme.typography.bodySmall, color = c.soft)
 
@@ -134,4 +139,30 @@ fun TelaBackup(vm: LancamentosViewModel, fechar: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun SecaoBiometria(acesso: br.com.systekna.financas.aplicacao.AcessoViewModel) {
+    val c = LocalCores.current
+    val disponivel = remember { acesso.biometriaDisponivel() }
+    var ativa by remember { mutableStateOf(acesso.biometriaAtiva()) }
+    var aviso by remember { mutableStateOf<String?>(null) }
+    Spacer(Modifier.height(12.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icones.digital, null, tint = if (ativa) c.accent else c.soft)
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Biometria", style = MaterialTheme.typography.titleMedium, color = c.ink)
+            Text(
+                when { !disponivel -> "Sem digital ou rosto cadastrado neste celular (Configurações do Android)."; ativa -> "Ativa: abre com a digital ou o rosto. O PIN continua valendo."; else -> "Desativada: abre só com o PIN." },
+                style = MaterialTheme.typography.bodySmall, color = c.soft,
+            )
+        }
+    }
+    if (disponivel) {
+        Spacer(Modifier.height(8.dp))
+        if (ativa) Botao("DESATIVAR BIOMETRIA", null, principal = false) { acesso.desativarBiometria(); ativa = false; aviso = null }
+        else Botao("ATIVAR BIOMETRIA", Icones.digital) { acesso.ativarBiometria { erro -> aviso = erro; ativa = acesso.biometriaAtiva() } }
+    }
+    aviso?.let { Spacer(Modifier.height(6.dp)); Text(it, color = c.saida, style = MaterialTheme.typography.bodySmall) }
 }

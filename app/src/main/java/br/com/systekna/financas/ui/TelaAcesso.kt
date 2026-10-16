@@ -41,10 +41,16 @@ fun TelaAcesso(vm: AcessoViewModel) {
                     e.erro, aoCompletar = vm::pinCriado,
                 )
                 is EstadoAcesso.MostrarCodigo -> CodigoRecuperacao(e.codigo, vm::codigoGuardado)
-                is EstadoAcesso.Desbloquear -> Teclado(
-                    e, "Dados protegidos", "Digite seu PIN para abrir o app.", e.erro, esperaAte = e.esperaAte,
-                    aoCompletar = vm::pinDigitado, link = "Esqueci o PIN" to vm::esqueciPin,
-                )
+                is EstadoAcesso.Desbloquear -> {
+                    // Biometria ativa: abre o leitor sozinho ao chegar na tela (cancelar volta para o PIN).
+                    LaunchedEffect(e) { if (e.biometria && e.erro == null) vm.usarBiometria() }
+                    Teclado(
+                        e, "Dados protegidos", if (e.biometria) "Use a digital ou o rosto, ou digite seu PIN." else "Digite seu PIN para abrir o app.",
+                        e.erro, esperaAte = e.esperaAte, aoCompletar = vm::pinDigitado, link = "Esqueci o PIN" to vm::esqueciPin,
+                        biometria = if (e.biometria) vm::usarBiometria else null,
+                    )
+                }
+                EstadoAcesso.OferecerBiometria -> OfertaBiometria(vm::ativarBiometria, vm::recusarBiometria)
                 is EstadoAcesso.Recuperar -> Recuperar(e.erro, vm::codigoDigitado, vm::voltarAoPin)
                 is EstadoAcesso.NovoPin -> Teclado(
                     e, if (e.confirmar == null) "Novo PIN" else "Confirme o novo PIN",
@@ -80,7 +86,7 @@ private fun Selo(titulo: String, texto: String) {
 @Composable
 private fun Teclado(
     chave: Any, titulo: String, texto: String, erro: String?, aoCompletar: (String) -> Unit,
-    esperaAte: Long = 0, link: Pair<String, () -> Unit>? = null,
+    esperaAte: Long = 0, link: Pair<String, () -> Unit>? = null, biometria: (() -> Unit)? = null,
 ) {
     val c = LocalCores.current
     var pin by remember(chave) { mutableStateOf("") }
@@ -115,7 +121,9 @@ private fun Teclado(
                 linha.forEach { t ->
                     val mod = Modifier.size(72.dp).clip(CircleShape)
                     when (t) {
-                        "" -> Spacer(Modifier.size(72.dp))
+                        "" -> if (biometria != null) Box(mod.clickable(role = Role.Button, onClick = biometria), contentAlignment = Alignment.Center) {
+                            Icon(Icones.digital, "Usar biometria", tint = c.accent, modifier = Modifier.size(30.dp))
+                        } else Spacer(Modifier.size(72.dp))
                         "apagar" -> Box(mod.clickable(enabled = pin.isNotEmpty(), role = Role.Button) { pin = pin.dropLast(1) }, contentAlignment = Alignment.Center) {
                             Icon(Icones.apagar, "Apagar", tint = c.soft)
                         }
@@ -151,6 +159,27 @@ private fun CodigoRecuperacao(codigo: String, guardei: () -> Unit) {
         Botao(if (copiado) "COPIADO" else "COPIAR CÓDIGO", Icones.copiar, principal = false) { area.setText(AnnotatedString(codigo)); copiado = true }
         Spacer(Modifier.height(10.dp))
         Botao("GUARDEI O CÓDIGO", Icones.chave, aoTocar = guardei)
+    }
+}
+
+@Composable
+private fun OfertaBiometria(ativar: ((String?) -> Unit) -> Unit, recusar: () -> Unit) {
+    val c = LocalCores.current
+    var erro by remember { mutableStateOf<String?>(null) }
+    Box(Modifier.size(56.dp).clip(CircleShape).background(c.accentSoft), contentAlignment = Alignment.Center) {
+        Icon(Icones.digital, null, tint = c.accent, modifier = Modifier.size(28.dp))
+    }
+    Spacer(Modifier.height(14.dp))
+    Text("Usar biometria?", style = MaterialTheme.typography.headlineSmall, color = c.ink, textAlign = TextAlign.Center)
+    Spacer(Modifier.height(6.dp))
+    Text("Abra o app com a digital ou o rosto. O PIN continua valendo, e cadastrar uma digital nova no celular desliga a biometria por segurança.",
+        style = MaterialTheme.typography.bodyMedium, color = c.soft, textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 320.dp))
+    Spacer(Modifier.height(20.dp))
+    Vidro(Modifier.widthIn(max = 420.dp)) {
+        Botao("ATIVAR BIOMETRIA", Icones.digital) { ativar { erro = it } }
+        Spacer(Modifier.height(10.dp))
+        Botao("AGORA NÃO", null, principal = false, aoTocar = recusar)
+        erro?.let { Spacer(Modifier.height(8.dp)); Text(it, color = c.saida, style = MaterialTheme.typography.bodySmall) }
     }
 }
 

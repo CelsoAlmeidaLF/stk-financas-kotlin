@@ -39,7 +39,7 @@ import br.com.systekna.financas.aplicacao.LancamentosViewModel
 import br.com.systekna.financas.dominio.Modelo
 
 @Composable
-fun TelaLancamentos(vm: LancamentosViewModel, bloquear: () -> Unit) {
+fun TelaLancamentos(vm: LancamentosViewModel, acesso: br.com.systekna.financas.aplicacao.AcessoViewModel) {
     val estado by vm.estado.collectAsStateWithLifecycle()
     val c = LocalCores.current
     var backup by rememberSaveable { mutableStateOf(false) }
@@ -50,7 +50,7 @@ fun TelaLancamentos(vm: LancamentosViewModel, bloquear: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item { Cabecalho(estado.mes, vm::mudarMes, abrirBackup = { backup = true }, bloquear = bloquear) }
+            item { Cabecalho(estado.mes, vm::mudarMes, abrirBackup = { backup = true }, bloquear = acesso::bloquear) }
             item { CartaoSaldo(estado.resumo) }
             item { NovoLancamento(estado.mes, vm::lancar) }
             if (estado.resumo.porCategoria.isNotEmpty()) item { PorCategoria(estado.resumo) }
@@ -62,7 +62,7 @@ fun TelaLancamentos(vm: LancamentosViewModel, bloquear: () -> Unit) {
             item { Rodape() }
         }
     }
-    if (backup) TelaBackup(vm, fechar = { backup = false })
+    if (backup) TelaBackup(vm, acesso, fechar = { backup = false })
 }
 
 @Composable
@@ -74,7 +74,7 @@ private fun Cabecalho(mes: String, mudarMes: (Int) -> Unit, abrirBackup: () -> U
                 Text("Finanças da Casa", style = MaterialTheme.typography.bodySmall, color = c.soft)
                 Text("Lançamentos", style = MaterialTheme.typography.headlineSmall, color = c.ink)
             }
-            IconButton(onClick = abrirBackup) { Icon(Icones.backup, "Backup", tint = c.ink) }
+            IconButton(onClick = abrirBackup) { Icon(Icones.escudo, "Segurança e backup", tint = c.ink) }
             IconButton(onClick = bloquear) { Icon(Icones.cadeado, "Bloquear o app", tint = c.ink) }
         }
         Spacer(Modifier.height(10.dp))

@@ -26,6 +26,19 @@ class ArmazemMemoria : ArmazemCofre {
     override fun gravarErros(e: Erros) { this.e = e }
 }
 
+class BioFalsa(var temNoAparelho: Boolean = true) : Biometria {
+    var guardada: String? = null; var recusou = false
+    var resposta: () -> Boolean = { true }       // true = digital aceita; false = cancelou
+    var invalidada = false
+    override fun disponivel() = temNoAparelho
+    override fun ativa() = guardada != null
+    override fun recusada() = recusou
+    override fun recusar() { recusou = true }
+    override suspend fun ativar(dek: String) = resposta().also { if (it) guardada = dek }
+    override suspend fun abrir(): String? { if (invalidada) throw BiometriaInvalidada(); return if (resposta()) guardada else null }
+    override fun desativar() { guardada = null }
+}
+
 class DaoMemoria : RegistroDao {
     val linhas = MutableStateFlow<Map<String, RegistroEntity>>(emptyMap())
     val antigosLista = mutableListOf<LancamentoEntity>()
@@ -50,7 +63,7 @@ class AcessoEBackupTest {
     }
 
     @Test fun criarPinMostraCodigoELibera() {
-        val arm = ArmazemMemoria(); val vm = AcessoViewModel(arm, ITER)
+        val arm = ArmazemMemoria(); val vm = AcessoViewModel(arm, BioFalsa(temNoAparelho = false), ITER)
         assertIs<EstadoAcesso.CriarPin>(vm.aguardar())
         vm.pinCriado("123456"); assertEquals("123456", (vm.aguardar() as EstadoAcesso.CriarPin).confirmar)
         vm.pinCriado("654321"); assertNotNull((vm.aguardar() as EstadoAcesso.CriarPin).erro) // não coincidem: recomeça
@@ -64,7 +77,7 @@ class AcessoEBackupTest {
 
     @Test fun pinErradoContaErrosEEsperaDepoisDeCinco() {
         val arm = ArmazemMemoria().apply { cofre = CofrePin.criar("111111", ITER).cofre }
-        val vm = AcessoViewModel(arm, ITER)
+        val vm = AcessoViewModel(arm, BioFalsa(temNoAparelho = false), ITER)
         assertIs<EstadoAcesso.Desbloquear>(vm.aguardar())
         repeat(4) { vm.pinDigitado("999999"); assertEquals(0, (vm.aguardar() as EstadoAcesso.Desbloquear).esperaAte) }
         vm.pinDigitado("999999")
@@ -79,7 +92,7 @@ class AcessoEBackupTest {
     @Test fun esqueciPinComCodigoTrocaOPinEMantemOsDados() {
         val novo = CofrePin.criar("111111", ITER)
         val arm = ArmazemMemoria().apply { cofre = novo.cofre }
-        val vm = AcessoViewModel(arm, ITER); vm.aguardar()
+        val vm = AcessoViewModel(arm, BioFalsa(temNoAparelho = false), ITER); vm.aguardar()
         vm.esqueciPin(); vm.codigoDigitado("AAAA-BBBB"); assertNotNull((vm.aguardar() as EstadoAcesso.Recuperar).erro)
         vm.codigoDigitado(novo.codigo); assertIs<EstadoAcesso.NovoPin>(vm.aguardar())
         vm.novoPinDigitado("222222"); vm.novoPinDigitado("222222")
@@ -124,5 +137,39 @@ class AcessoEBackupTest {
         val r = destinoDao.linhas.value.values.single()
         assertEquals("2026-10", r.mes)
         assertEquals(listOf(pao), destino.exportar("outra-senha", ITER).let { BackupCifrado.abrir(it, "outra-senha").map { i -> i.lancamento } })
+    }
+
+    @Test fun ofereceBiometriaDepoisDoPinEAbreComElaNaProximaVez() {
+        val arm = ArmazemMemoria(); val bio = BioFalsa(); val vm = AcessoViewModel(arm, bio, ITER)
+        vm.aguardar(); vm.pinCriado("123456"); vm.pinCriado("123456")
+        assertIs<EstadoAcesso.MostrarCodigo>(vm.aguardar()); vm.codigoGuardado()
+        assertEquals(EstadoAcesso.OferecerBiometria, vm.aguardar())
+        var msg: String? = "x"; vm.ativarBiometria { msg = it }
+        assertEquals(EstadoAcesso.Liberado, vm.aguardar()); assertNull(msg)
+        assertEquals(vm.sessao.dek(), bio.guardada)
+        val dek = vm.sessao.dek()
+        vm.bloquear()
+        val tela = assertIs<EstadoAcesso.Desbloquear>(vm.aguardar()); assertTrue(tela.biometria)
+        vm.usarBiometria(); assertEquals(EstadoAcesso.Liberado, vm.aguardar()); assertEquals(dek, vm.sessao.dek())
+    }
+
+    @Test fun cancelarBiometriaFicaNoPinEDigitalNovaDesativa() {
+        val n = CofrePin.criar("123456", ITER)
+        val arm = ArmazemMemoria().apply { cofre = n.cofre }
+        val bio = BioFalsa().apply { guardada = n.dek; resposta = { false } }
+        val vm = AcessoViewModel(arm, bio, ITER)
+        val tela = assertIs<EstadoAcesso.Desbloquear>(vm.aguardar())
+        vm.usarBiometria(); assertSame(tela, vm.aguardar()); assertNull(vm.sessao.chave) // cancelou: continua no PIN
+        bio.invalidada = true; vm.usarBiometria()
+        val depois = assertIs<EstadoAcesso.Desbloquear>(vm.aguardar())
+        assertNotNull(depois.erro); assertFalse(depois.biometria); assertNull(bio.guardada)
+        vm.pinDigitado("123456"); assertEquals(EstadoAcesso.OferecerBiometria, vm.aguardar()) // oferece de novo
+        vm.recusarBiometria(); assertEquals(EstadoAcesso.Liberado, vm.aguardar()); assertTrue(bio.recusou)
+    }
+
+    @Test fun semBiometriaNoAparelhoNaoOferece() {
+        val vm = AcessoViewModel(ArmazemMemoria(), BioFalsa(temNoAparelho = false), ITER)
+        vm.aguardar(); vm.pinCriado("123456"); vm.pinCriado("123456"); vm.aguardar(); vm.codigoGuardado()
+        assertEquals(EstadoAcesso.Liberado, vm.aguardar())
     }
 }
