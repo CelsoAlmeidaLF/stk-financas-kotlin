@@ -6,7 +6,7 @@ Piloto de migração nativa do PWA `../stk-desp-firebase-google` (v2.6.3). Escop
 
 **[Baixar a última versão](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases/latest/download/financas-casa-kotlin.apk)**: abra este link no navegador do Android, baixe e toque no arquivo. Na primeira vez, o Android pede para permitir a instalação de apps de fontes desconhecidas. Versões anteriores ficam em [Releases](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases).
 
-O APK é de teste (build debug), assinado com a chave de debug da máquina de build: as atualizações instalam por cima enquanto forem geradas na mesma máquina.
+O APK é assinado com a chave de release da Systekna (certificado `CN=Celso de Almeida Leite F, O=Systekna, C=BR`, SHA-256 `1b21a6ac…5e72de236`). As atualizações instalam por cima da versão anterior. Quem instalou um APK de debug antigo precisa desinstalá-lo uma vez antes.
 
 | Módulo | Camada | O que tem |
 | --- | --- | --- |
@@ -37,7 +37,11 @@ scripts/build-apk.sh               # testa o domínio e gera dist/financas-casa-
 scripts/publicar-apk.sh v0.1.0     # cria a Release com o APK (precisa do gh logado)
 ```
 
-Requisitos: JDK 17, Gradle 8.9+ (o script acha o do cache `~/.gradle` se não houver no PATH) e Android SDK em `~/Android/Sdk` (ou `ANDROID_HOME`), com `platforms;android-35`. No Android Studio: abrir esta pasta.
+Requisitos: JDK 17, a chave de assinatura, Gradle 8.9+ (o script acha o do cache `~/.gradle` se não houver no PATH) e Android SDK em `~/Android/Sdk` (ou `ANDROID_HOME`), com `platforms;android-35`. No Android Studio: abrir esta pasta.
+
+### Chave de assinatura
+
+`scripts/build-apk.sh` compila o release e assina com `~/.android-keys/systekna-release.jks` (alias `systekna`, senha em `~/.android-keys/systekna-release.pass`). Outros caminhos: `STK_KEYSTORE` e `STK_KEYPASS_FILE`. A chave nunca entra no git. **Sem ela não dá para publicar atualizações**: os aparelhos recusam um APK assinado com outra chave.
 
 ## O que o piloto não cobre (próximas etapas)
 

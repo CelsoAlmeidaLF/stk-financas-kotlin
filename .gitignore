@@ -27,3 +27,4 @@ Thumbs.db
 
 # APK gerado localmente (publicado em Releases, não no git)
 dist/
+*.pass
