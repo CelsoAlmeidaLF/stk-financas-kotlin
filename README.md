@@ -6,7 +6,7 @@ Piloto de migração nativa do PWA `../stk-desp-firebase-google` (v2.6.3). Escop
 
 Página de download dos dois apps (com QR code para abrir no celular): **https://celsoalmeidalf.github.io/stk-financas-android/**
 
-**[Baixar a última versão](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases/latest/download/financas-casa-kotlin.apk)**: abra este link no navegador do Android, baixe e toque no arquivo. Na primeira vez, o Android pede para permitir a instalação de apps de fontes desconhecidas. Versões anteriores ficam em [Releases](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases).
+**[Baixar a última versão pelo GitHub](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases/latest/download/financas-casa-kotlin.apk)**: abra este link no navegador do Android, baixe e toque no arquivo. Na primeira vez, o Android pede para permitir a instalação de apps de fontes desconhecidas. Versões anteriores ficam em [Releases](https://github.com/CelsoAlmeidaLF/stk-financas-kotlin/releases).
 
 O APK é assinado com a chave de release da Systekna (certificado `CN=Celso de Almeida Leite F, O=Systekna, C=BR`, SHA-256 `1b21a6ac…5e72de236`). As atualizações instalam por cima da versão anterior. Quem instalou um APK de debug antigo precisa desinstalá-lo uma vez antes.
 
@@ -36,7 +36,7 @@ Tudo roda na máquina local; o repositório guarda o código e publica o APK em 
 
 ```bash
 scripts/build-apk.sh               # testa o domínio e gera dist/financas-casa-kotlin.apk
-scripts/publicar-apk.sh v0.1.0     # cria a Release com o APK (precisa do gh logado)
+scripts/publicar-apk.sh v0.1.2     # cria a Release e atualiza a página de download (precisa do gh logado)
 ```
 
 Requisitos: JDK 17, a chave de assinatura, Gradle 8.9+ (o script acha o do cache `~/.gradle` se não houver no PATH) e Android SDK em `~/Android/Sdk` (ou `ANDROID_HOME`), com `platforms;android-35`. No Android Studio: abrir esta pasta.
