@@ -1,0 +1,152 @@
+{
+  "casaId": "casaInterop01",
+  "palavras": [
+    "molinete",
+    "grampo",
+    "jasmim",
+    "damasco",
+    "naja",
+    "excesso",
+    "habitar",
+    "noturno",
+    "aliviar",
+    "inativo",
+    "meteoro",
+    "garfo"
+  ],
+  "hash": "YYW3-M4PT-W4J9-3TX2-27PE-TRF3",
+  "selo": "DA79-FBA6",
+  "codigo": "TL7W-RNW2-MHM9-QPQW-K5X3-QG85-GARL-RABV",
+  "dek": "D5YLFvz2BMjQewflUG7FI++hp7N/DiogiQfrh6LHtPU=",
+  "kid": "3F9E82DF",
+  "cripto": {
+    "v": 1,
+    "iter": 600000,
+    "selo": "DA79-FBA6",
+    "kid": "3F9E82DF",
+    "frase": {
+      "salt": "YzFHh0tuZ4SRaKsVUu/7Qg==",
+      "iv": "987u8vIXHkAmwEDv",
+      "ct": "5h01QZkmZ5QF8V4OaQYW+5RcRJAoXR4DvmXa2GpHShS3lrNU3h1gc1TY1Ve8Mm/g"
+    },
+    "recup": {
+      "salt": "NozsemdQZ9fnXJ888SmOog==",
+      "iv": "sS7bG1au05D8YG5F",
+      "ct": "nNBd44f0cF77d3nfGl7rYGsDQzzQjOh0OQvDOflys/KeXk7FuiRv0DIgfJOXZa9S"
+    }
+  },
+  "envelope": {
+    "senha": "senha-ção-forte",
+    "arquivo": {
+      "tipo": "financas-casa/certificado-admin",
+      "v": 1,
+      "casaId": "casaInterop01",
+      "casaNome": "Casa Interop",
+      "emitidoPor": "",
+      "emitido": "2026-10-16T12:31:24.375Z",
+      "hash": "854D-83CD-D969-AE9E",
+      "iter": 600000,
+      "salt": "pOUjMECQUUW1tFkKtPvMJw==",
+      "iv": "wXi0/Xj7lDSVhgeT",
+      "ct": "O8p3apX9TRrdn4Vv194OjqUWcYNDIY6q/kjoEizeTGMK4NBnSsKCPfSvqbCRJycq0QgE5T5UIOCvo9widIgSfo7UKXgTX9DZmVQQ29j8ndDpVO1+jCZz0zQBgCI5saBsarWv9NSfIA3xzr+ni4G5b3bYlsp2IPvy2bR/56JLhDDuyTSYbw=="
+    },
+    "codigo": "Z79Y-NCV8-GGU3-FZ4C-3UPH-Z4A7-UADT-LZUS",
+    "hash": "854D-83CD-D969-AE9E",
+    "cripto": {
+      "v": 1,
+      "iter": 600000,
+      "selo": "DA79-FBA6",
+      "kid": "3F9E82DF",
+      "frase": {
+        "salt": "YzFHh0tuZ4SRaKsVUu/7Qg==",
+        "iv": "987u8vIXHkAmwEDv",
+        "ct": "5h01QZkmZ5QF8V4OaQYW+5RcRJAoXR4DvmXa2GpHShS3lrNU3h1gc1TY1Ve8Mm/g"
+      },
+      "recup": {
+        "salt": "ru8BURp6A2lGxvkboijTYg==",
+        "iv": "t/t1en1sZDNgCRmB",
+        "ct": "7x0+6GrUQDMrxHvMsQwWVn83zqvBS/PNx5XawahU+AGVrIEuu8d1M56LIYo2nDjE"
+      },
+      "cert": "854D-83CD-D969-AE9E",
+      "admin": {
+        "salt": "vywTtwPpxVmfc0V+MZ68dg==",
+        "iv": "iSijkfkt8gT1YWQv",
+        "ct": "DHGsu9Nn4BIGEcvCFFTD/sAyZxcvRv24QpSXlZdu7Ksu0pL/OWleQ0DNYx15rSnk"
+      }
+    }
+  },
+  "registro": {
+    "contexto": "casaInterop01/lancamentos/doc01",
+    "caixa": {
+      "iv": "FeirFmSUQw49Rzxa",
+      "ct": "RfyvY/PVrG1f24GWcwbBFdNsEa0glWTMMpD5eoxQlKg5QKIjOcZU0yAFqB/cTKe26A5qRfIfaa32qdVEaZhdfRs68BszcxuRAKVPRP0o/U4ddqi87L3DUewHQ2FHxATpZs0OrR8Q+0KtuMk1ct5Hoyg06hWIw1cIDnNpnvRKjfWMbloLbjtApUK9gaMgnH/qyEw="
+    },
+    "valor": {
+      "tipo": "despesa",
+      "descricao": "Pão de açúcar",
+      "valorCentavos": 4590,
+      "data": "2026-10-07",
+      "categoria": "Mercado",
+      "autorNome": "Ana"
+    }
+  },
+  "vetores": [
+    {
+      "entropiaHex": "00000000000000000000000000000000",
+      "palavras": [
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abacate",
+        "abater"
+      ],
+      "hash": "W7MT-8XFF-7KCB-F7KT-MMRH-YN2J",
+      "selo": "0CE0-2453"
+    },
+    {
+      "entropiaHex": "ffffffffffffffffffffffffffffffff",
+      "palavras": [
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "zumbido",
+        "xeque"
+      ],
+      "hash": "CNST-Y4Z6-BTNW-TV2V-WJ9C-A2G8",
+      "selo": "D58D-9E28"
+    },
+    {
+      "entropiaHex": "0123456789abcdeffedcba9876543210",
+      "palavras": [
+        "abranger",
+        "atrevido",
+        "entulho",
+        "apertada",
+        "pipoca",
+        "veleiro",
+        "vigiar",
+        "mamoeiro",
+        "mansa",
+        "pacote",
+        "alicate",
+        "batata"
+      ],
+      "hash": "K93U-RXD3-2Y4F-KSY6-9S65-FPSN",
+      "selo": "7075-D9B8"
+    }
+  ]
+}

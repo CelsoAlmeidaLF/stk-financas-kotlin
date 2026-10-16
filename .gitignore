@@ -1,0 +1,26 @@
+# Gradle e Kotlin
+build/
+.gradle/
+.kotlin/
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Artefatos e assinatura
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Node (scripts de interoperabilidade)
+node_modules/
+
+# Logs e sistema
+*.log
+.DS_Store
+Thumbs.db
