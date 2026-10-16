@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build local do APK: testa o domínio (22 testes) e compila o release assinado.
+# Build local do APK: roda os testes (domínio e app) e compila o release assinado.
 # Precisa: JDK 17, Gradle 8.9+ (no PATH ou GRADLE=...) e Android SDK (ANDROID_HOME, padrão ~/Android/Sdk).
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -22,6 +22,6 @@ assinar() { # $1 = APK sem assinatura, $2 = APK final
   echo "APK: $(pwd)/$2"
 }
 
-"$GRADLE" --no-daemon :dominio:test :app:assembleRelease
+"$GRADLE" --no-daemon :dominio:test :app:testReleaseUnitTest :app:assembleRelease
 
 assinar app/build/outputs/apk/release/app-release-unsigned.apk dist/financas-casa-kotlin.apk

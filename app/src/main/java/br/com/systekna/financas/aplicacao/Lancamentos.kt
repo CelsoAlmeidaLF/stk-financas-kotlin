@@ -4,23 +4,29 @@ package br.com.systekna.financas.aplicacao
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.systekna.financas.dominio.BackupCifrado
+import br.com.systekna.financas.dominio.CriptoCasa
 import br.com.systekna.financas.dominio.ErroValidacao
 import br.com.systekna.financas.dominio.Lancamento
 import br.com.systekna.financas.dominio.Modelo
 import br.com.systekna.financas.dominio.Validacao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-data class LancamentoSalvo(val id: Long, val lancamento: Lancamento, val criadoEm: Long) {
+data class LancamentoSalvo(val id: String, val lancamento: Lancamento, val criadoEm: Long) {
     val travado get() = Modelo.travado(criadoEm)
 }
 
-// Porta: quem guarda os lançamentos (Room hoje; Firestore cifrado no futuro).
+// Porta: quem guarda os lançamentos (no Android: SQLite via Room, cada registro cifrado com a chave do cofre).
 interface RepositorioLancamentos {
     fun doMes(mes: String): Flow<List<LancamentoSalvo>>
     suspend fun inserir(l: Lancamento)
-    suspend fun excluir(id: Long)
+    suspend fun excluir(id: String)
+    suspend fun todos(): List<LancamentoSalvo>
+    suspend fun substituirTudo(itens: List<BackupCifrado.Item>)
 }
 
 data class Formulario(val tipo: String, val descricao: String, val valor: String, val data: String, val categoria: String)
@@ -59,6 +65,18 @@ class LancamentosViewModel(private val repo: RepositorioLancamentos) : ViewModel
     fun excluir(item: LancamentoSalvo) {
         if (item.travado) return // a interface já esconde o botão; a regra vale aqui também
         viewModelScope.launch { repo.excluir(item.id) }
+    }
+
+    /* ---------- backup ---------- */
+    // Devolve o JSON cifrado com a senha (o arquivo é gravado pela tela, onde o usuário escolher).
+    suspend fun exportar(senha: String, iteracoes: Int = CriptoCasa.ITERACOES): String = withContext(Dispatchers.Default) {
+        BackupCifrado.gerar(repo.todos().map { BackupCifrado.Item(it.lancamento, it.criadoEm) }, senha, iteracoes)
+    }
+    // Abre com a senha, valida cada registro e troca todos os lançamentos deste aparelho. Devolve quantos entraram.
+    suspend fun restaurar(texto: String, senha: String): Int = withContext(Dispatchers.Default) {
+        val itens = BackupCifrado.abrir(texto, senha)
+        repo.substituirTudo(itens)
+        itens.size
     }
 
     companion object {

@@ -38,28 +38,19 @@ import br.com.systekna.financas.aplicacao.LancamentoSalvo
 import br.com.systekna.financas.aplicacao.LancamentosViewModel
 import br.com.systekna.financas.dominio.Modelo
 
-private val Forma = RoundedCornerShape(22.dp)
-
 @Composable
-fun TelaLancamentos(vm: LancamentosViewModel) {
+fun TelaLancamentos(vm: LancamentosViewModel, bloquear: () -> Unit) {
     val estado by vm.estado.collectAsStateWithLifecycle()
     val c = LocalCores.current
+    var backup by rememberSaveable { mutableStateOf(false) }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(c.ceu))
-            .drawBehind {
-                drawCircle(Brush.radialGradient(listOf(c.orbe1, Color.Transparent), Offset(size.width * .15f, 0f), size.width * .9f), size.width * .9f, Offset(size.width * .15f, 0f))
-                drawCircle(Brush.radialGradient(listOf(c.orbe2, Color.Transparent), Offset(size.width, size.height * .25f), size.width * .7f), size.width * .7f, Offset(size.width, size.height * .25f))
-            }
-    ) {
+    Fundo {
         LazyColumn(
             Modifier.fillMaxSize().safeDrawingPadding(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item { Cabecalho(estado.mes, vm::mudarMes) }
+            item { Cabecalho(estado.mes, vm::mudarMes, abrirBackup = { backup = true }, bloquear = bloquear) }
             item { CartaoSaldo(estado.resumo) }
             item { NovoLancamento(estado.mes, vm::lancar) }
             if (estado.resumo.porCategoria.isNotEmpty()) item { PorCategoria(estado.resumo) }
@@ -71,25 +62,11 @@ fun TelaLancamentos(vm: LancamentosViewModel) {
             item { Rodape() }
         }
     }
+    if (backup) TelaBackup(vm, fechar = { backup = false })
 }
 
 @Composable
-private fun Vidro(modifier: Modifier = Modifier, padding: Dp = 16.dp, conteudo: @Composable ColumnScope.() -> Unit) {
-    val c = LocalCores.current
-    Column(
-        modifier
-            .fillMaxWidth()
-            .shadow(10.dp, Forma, ambientColor = Color(0x33143C28), spotColor = Color(0x55143C28))
-            .clip(Forma)
-            .background(c.vidro())
-            .border(1.dp, Brush.verticalGradient(listOf(c.brilho, c.line)), Forma)
-            .padding(padding),
-        content = conteudo,
-    )
-}
-
-@Composable
-private fun Cabecalho(mes: String, mudarMes: (Int) -> Unit) {
+private fun Cabecalho(mes: String, mudarMes: (Int) -> Unit, abrirBackup: () -> Unit, bloquear: () -> Unit) {
     val c = LocalCores.current
     Column(Modifier.padding(horizontal = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -97,10 +74,8 @@ private fun Cabecalho(mes: String, mudarMes: (Int) -> Unit) {
                 Text("Finanças da Casa", style = MaterialTheme.typography.bodySmall, color = c.soft)
                 Text("Lançamentos", style = MaterialTheme.typography.headlineSmall, color = c.ink)
             }
-            Text(
-                "PILOTO KOTLIN", style = mono(11), color = c.accent,
-                modifier = Modifier.clip(CircleShape).background(c.accentSoft).padding(horizontal = 10.dp, vertical = 5.dp)
-            )
+            IconButton(onClick = abrirBackup) { Icon(Icones.backup, "Backup", tint = c.ink) }
+            IconButton(onClick = bloquear) { Icon(Icones.cadeado, "Bloquear o app", tint = c.ink) }
         }
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -217,27 +192,6 @@ private fun NovoLancamento(mes: String, lancar: (Formulario) -> br.com.systekna.
 }
 
 @Composable
-private fun Campo(
-    rotulo: String, valor: String, mudar: (String) -> Unit, erro: String?, modifier: Modifier = Modifier.fillMaxWidth(),
-    teclado: KeyboardType = KeyboardType.Text, monoTexto: Boolean = false, dica: String? = null,
-) {
-    val c = LocalCores.current
-    OutlinedTextField(
-        value = valor, onValueChange = mudar, label = { Text(rotulo) }, singleLine = true, modifier = modifier,
-        placeholder = if (dica != null) { { Text(dica, color = c.faint) } } else null,
-        isError = erro != null, supportingText = if (erro != null) { { Text(erro) } } else null,
-        textStyle = if (monoTexto) mono(15) else MaterialTheme.typography.bodyLarge,
-        keyboardOptions = KeyboardOptions(keyboardType = teclado, imeAction = ImeAction.Next),
-        shape = RoundedCornerShape(14.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = c.field, unfocusedContainerColor = c.field, errorContainerColor = c.field,
-            focusedBorderColor = c.accent, unfocusedBorderColor = c.line, focusedLabelColor = c.accent, unfocusedLabelColor = c.soft,
-            cursorColor = c.accent, focusedTextColor = c.ink, unfocusedTextColor = c.ink,
-        ),
-    )
-}
-
-@Composable
 private fun PorCategoria(r: Modelo.ResumoMes) {
     val c = LocalCores.current
     val maior = r.porCategoria.first().second.coerceAtLeast(1)
@@ -301,6 +255,6 @@ private fun Rodape() {
     Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         Icon(Icones.escudo, null, tint = c.faint, modifier = Modifier.size(14.dp))
         Spacer(Modifier.width(6.dp))
-        Text("Dados só neste aparelho · regras e cripto iguais às do PWA", style = MaterialTheme.typography.bodySmall, color = c.faint)
+        Text("Dados cifrados só neste aparelho · PIN e backup cifrado", style = MaterialTheme.typography.bodySmall, color = c.faint)
     }
 }

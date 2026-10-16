@@ -40,8 +40,8 @@ object CriptoCasa {
 
     private val rnd = SecureRandom()
     private fun utf8(s: String) = s.toByteArray(Charsets.UTF_8)
-    private fun b64(b: ByteArray): String = Base64.getEncoder().encodeToString(b)
-    private fun unb64(s: String): ByteArray = Base64.getDecoder().decode(s)
+    internal fun b64(b: ByteArray): String = Base64.getEncoder().encodeToString(b)
+    internal fun unb64(s: String): ByteArray = Base64.getDecoder().decode(s)
     fun aleatorio(n: Int) = ByteArray(n).also { rnd.nextBytes(it) }
     private fun sha256(b: ByteArray): ByteArray = MessageDigest.getInstance("SHA-256").digest(b)
     private fun hex(b: ByteArray) = b.joinToString("") { "%02X".format(it.toInt() and 0xFF) }
@@ -113,19 +113,19 @@ object CriptoCasa {
         }
         return t
     }
-    private fun kek(segredo: String, salt: ByteArray, iteracoes: Int): SecretKey =
+    internal fun kek(segredo: String, salt: ByteArray, iteracoes: Int): SecretKey =
         SecretKeySpec(pbkdf2(utf8(segredo), salt, iteracoes), "AES")
 
-    private fun gcm(modo: Int, chave: SecretKey, iv: ByteArray, aad: String, dados: ByteArray): ByteArray =
+    internal fun gcm(modo: Int, chave: SecretKey, iv: ByteArray, aad: String, dados: ByteArray): ByteArray =
         Cipher.getInstance("AES/GCM/NoPadding").run {
             init(modo, chave, GCMParameterSpec(128, iv)); updateAAD(utf8(aad)); doFinal(dados)
         }
 
-    private fun embrulhar(dekB64: String, segredo: String, contexto: String): Caixa {
+    internal fun embrulhar(dekB64: String, segredo: String, contexto: String, iteracoes: Int = ITERACOES): Caixa {
         val salt = aleatorio(16); val iv = aleatorio(12)
-        return Caixa(b64(salt), b64(iv), b64(gcm(Cipher.ENCRYPT_MODE, kek(segredo, salt, ITERACOES), iv, contexto, unb64(dekB64))))
+        return Caixa(b64(salt), b64(iv), b64(gcm(Cipher.ENCRYPT_MODE, kek(segredo, salt, iteracoes), iv, contexto, unb64(dekB64))))
     }
-    private fun desembrulhar(caixa: Caixa?, segredo: String, contexto: String, iteracoes: Int): String {
+    internal fun desembrulhar(caixa: Caixa?, segredo: String, contexto: String, iteracoes: Int): String {
         if (caixa?.salt == null) throw ErroCripto(null, "Configuração de criptografia inválida.")
         try {
             val raw = gcm(Cipher.DECRYPT_MODE, kek(segredo, unb64(caixa.salt), iteracoes), unb64(caixa.iv), contexto, unb64(caixa.ct))
@@ -137,6 +137,7 @@ object CriptoCasa {
                 when {
                     contexto.endsWith("frase") -> "Palavras ou hash da casa incorretos."
                     contexto.endsWith("admin") -> "Certificado do administrador incorreto."
+                    contexto.endsWith(":pin") -> "PIN incorreto."
                     else -> "Código de recuperação incorreto."
                 }
             )

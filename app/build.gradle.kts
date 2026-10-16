@@ -15,8 +15,8 @@ android {
         applicationId = "br.com.systekna.financascasa.kt"
         minSdk = 26 // java.util.Base64 e PBKDF2 sobre HMAC-SHA256 nativos
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-piloto"
+        versionCode = 2
+        versionName = "0.2.0-piloto"
     }
 
     compileOptions {
@@ -46,4 +46,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle")
+
+    // Testes no JVM: aplicação (PIN, backup) e repositório cifrado com um DAO em memória.
+    testImplementation(kotlin("test"))
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }
